@@ -88,7 +88,7 @@ def send_reminder_thread(channel_id: str, pending_user_ids: list[str], message_t
             thread_ts=message_ts,
             text=(
                 f"{mentions}\n"
-                f"위 메시지에 리액션을 아직 달지 않으셨어요. 확인 후 리액션 부탁드립니다! :pray:"
+                f"위 메시지에 리액션을 아직 달지 않으셨어요. 확인 후 리액션 부탁드립니다~ :pray:"
             ),
         )
         print(f"  → 스레드 리마인드 전송 완료 ({len(pending_user_ids)}명 멘션)")
@@ -106,7 +106,7 @@ def send_reminder_dm(user_id: str, channel_id: str, message_ts: str) -> None:
                 f"안녕하세요! :wave:\n"
                 f"<#{channel_id}> 채널의 <{message_link}|메시지>에 "
                 f"리액션을 아직 달지 않으셨어요.\n"
-                f"확인 후 리액션 부탁드립니다! :pray:"
+                f"확인 후 리액션 부탁드립니다~ :pray:"
             ),
         )
         print(f"  → DM 전송 완료: {user_id}")
