@@ -131,15 +131,15 @@ def main() -> None:
         print("[INFO] @channel/@here 멘션 감지 → 채널 멤버 전체 조회")
         mentioned_users = get_channel_members(CHANNEL_ID)
 
-        # 메시지 작성자는 제외 (본인이 올린 공지에 본인이 리액션 안 해도 됨)
-        author_id = message.get("user")
-        if author_id and author_id in mentioned_users:
-            mentioned_users.remove(author_id)
+    # 메시지 작성자는 제외 (본인이 올린 공지에 본인이 리액션 안 해도 됨)
+    author_id = message.get("user")
+    if author_id and author_id in mentioned_users:
+        mentioned_users.remove(author_id)
 
-        # 봇 자신도 제외
-        bot_id = get_bot_user_id()
-        if bot_id and bot_id in mentioned_users:
-            mentioned_users.remove(bot_id)
+    # 봇 자신도 제외
+    bot_id = get_bot_user_id()
+    if bot_id and bot_id in mentioned_users:
+        mentioned_users.remove(bot_id)
 
     print(f"[INFO] 대상 유저 ({len(mentioned_users)}명): {mentioned_users}")
 
