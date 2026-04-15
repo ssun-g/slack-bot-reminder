@@ -79,7 +79,7 @@ def get_reacted_users(channel_id: str, message_ts: str) -> set[str]:
     return all_users
 
 
-def send_reminder(channel_id: str, pending_user_ids: list[str], message_ts: str) -> None:
+def send_reminder_thread(channel_id: str, pending_user_ids: list[str], message_ts: str) -> None:
     """원본 메시지 스레드에 미완료 유저를 멘션하여 리마인드 전송."""
     mentions = " ".join(f"<@{uid}>" for uid in pending_user_ids)
     try:
@@ -93,7 +93,25 @@ def send_reminder(channel_id: str, pending_user_ids: list[str], message_ts: str)
         )
         print(f"  → 스레드 리마인드 전송 완료 ({len(pending_user_ids)}명 멘션)")
     except SlackApiError as e:
-        print(f"  → 리마인드 전송 실패: {e.response['error']}")
+        print(f"  → 스레드 리마인드 전송 실패: {e.response['error']}")
+
+
+def send_reminder_dm(user_id: str, channel_id: str, message_ts: str) -> None:
+    """유저에게 DM으로 리마인드 전송."""
+    message_link = f"https://slack.com/archives/{channel_id}/p{message_ts.replace('.', '')}"
+    try:
+        client.chat_postMessage(
+            channel=user_id,
+            text=(
+                f"안녕하세요! :wave:\n"
+                f"<#{channel_id}> 채널의 <{message_link}|메시지>에 "
+                f"리액션을 아직 달지 않으셨어요.\n"
+                f"확인 후 리액션 부탁드립니다! :pray:"
+            ),
+        )
+        print(f"  → DM 전송 완료: {user_id}")
+    except SlackApiError as e:
+        print(f"  → DM 전송 실패 ({user_id}): {e.response['error']}")
 
 
 def main() -> None:
@@ -139,7 +157,11 @@ def main() -> None:
     print(f"[INFO] 리마인드 대상 ({len(pending_users)}명): {pending_users}")
 
     # 5. 원본 메시지 스레드에 리마인드 전송
-    send_reminder(CHANNEL_ID, pending_users, message["ts"])
+    send_reminder_thread(CHANNEL_ID, pending_users, message["ts"])
+
+    # 6. 각 유저에게 DM으로도 리마인드 전송
+    for user_id in pending_users:
+        send_reminder_dm(user_id, CHANNEL_ID, message["ts"])
 
     print("[INFO] 완료")
 
