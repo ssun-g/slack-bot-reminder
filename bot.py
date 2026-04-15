@@ -43,8 +43,8 @@ def get_latest_message_with_mentions(channel_id: str) -> tuple[dict | None, list
         return None, [], False
 
     for msg in response["messages"]:
-        # 앱/봇이 보낸 메시지는 제외
-        if msg.get("bot_id") or msg.get("subtype") == "bot_message":
+        # 시스템 메시지(채널 참여, 봇 메시지 등) 제외 - subtype이 있으면 일반 메시지가 아님
+        if msg.get("bot_id") or msg.get("subtype"):
             continue
 
         text = msg.get("text", "")
