@@ -56,8 +56,7 @@ def send_reminder(channel_id: str, pending_user_ids: list[str], message_ts: str)
             thread_ts=message_ts,
             text=(
                 f"{mentions}\n"
-                f"위 메시지에 :{REACTION_EMOJI}: 리액션을 아직 달지 않으셨어요. "
-                f"확인 후 리액션 부탁드립니다! :pray:"
+                f"위 메시지에 리액션을 아직 달지 않으셨어요. 확인 후 리액션 부탁드립니다! :pray:"
             ),
         )
         print(f"  → 스레드 리마인드 전송 완료 ({len(pending_user_ids)}명 멘션)")
