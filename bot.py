@@ -8,7 +8,6 @@ load_dotenv()
 
 SLACK_BOT_TOKEN = os.environ["SLACK_BOT_TOKEN"]
 CHANNEL_ID = os.environ["CHANNEL_ID"]
-REACTION_EMOJI = os.environ.get("REACTION_EMOJI", "white_check_mark")
 
 client = WebClient(token=SLACK_BOT_TOKEN)
 
@@ -31,8 +30,8 @@ def get_latest_message_with_mentions(channel_id: str) -> tuple[dict | None, list
     return None, []
 
 
-def get_reacted_users(channel_id: str, message_ts: str, emoji: str) -> set[str]:
-    """특정 메시지에서 특정 이모지를 누른 유저 ID 집합 반환."""
+def get_reacted_users(channel_id: str, message_ts: str) -> set[str]:
+    """특정 메시지에 리액션을 누른 모든 유저 ID 집합 반환."""
     try:
         response = client.reactions_get(channel=channel_id, timestamp=message_ts)
     except SlackApiError as e:
@@ -40,11 +39,13 @@ def get_reacted_users(channel_id: str, message_ts: str, emoji: str) -> set[str]:
         return set()
 
     reactions = response["message"].get("reactions", [])
-    for reaction in reactions:
-        if reaction["name"] == emoji:
-            return set(reaction["users"])
 
-    return set()
+    # 모든 리액션의 유저를 합집합으로
+    all_users = set()
+    for reaction in reactions:
+        all_users.update(reaction["users"])
+
+    return all_users
 
 
 def send_reminder(channel_id: str, pending_user_ids: list[str], message_ts: str) -> None:
@@ -77,9 +78,9 @@ def main() -> None:
     print(f"[INFO] 대상 메시지: {message['text'][:80].strip()}...")
     print(f"[INFO] 멘션된 유저: {mentioned_users}")
 
-    # 2. 해당 메시지의 리액션 누른 유저 조회
-    reacted_users = get_reacted_users(CHANNEL_ID, message["ts"], REACTION_EMOJI)
-    print(f"[INFO] :{REACTION_EMOJI}: 리액션 누른 유저: {reacted_users or '없음'}")
+    # 2. 해당 메시지의 리액션 누른 유저 조회 (모든 이모지)
+    reacted_users = get_reacted_users(CHANNEL_ID, message["ts"])
+    print(f"[INFO] 리액션 누른 유저: {reacted_users or '없음'}")
 
     # 3. 리액션을 누르지 않은 멘션 유저 필터링
     pending_users = [uid for uid in mentioned_users if uid not in reacted_users]
