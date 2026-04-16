@@ -31,6 +31,15 @@ def get_bot_user_id() -> str | None:
         return None
 
 
+def is_bot_user(user_id: str) -> bool:
+    """유저가 봇/앱인지 확인."""
+    try:
+        response = client.users_info(user=user_id)
+        return response["user"].get("is_bot", False)
+    except SlackApiError:
+        return False
+
+
 def get_latest_message_with_mentions(channel_id: str) -> tuple[dict | None, list[str], bool]:
     """
     채널의 최신 메시지 중 멘션이 포함된 것을 반환.
@@ -136,10 +145,8 @@ def main() -> None:
     if author_id and author_id in mentioned_users:
         mentioned_users.remove(author_id)
 
-    # 봇 자신도 제외
-    bot_id = get_bot_user_id()
-    if bot_id and bot_id in mentioned_users:
-        mentioned_users.remove(bot_id)
+    # 봇/앱 유저 제외 (Jira, 리마인더 봇 등)
+    mentioned_users = [uid for uid in mentioned_users if not is_bot_user(uid)]
 
     print(f"[INFO] 대상 유저 ({len(mentioned_users)}명): {mentioned_users}")
 
